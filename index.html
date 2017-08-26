@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Indego Nav</title>
+    <link rel="stylesheet" href="bootstrap-3.3.7-dist\css\bootstrap.css">
+</head>
+<body>
+    <form>
+        <div class="form-group">
+            <label for="startLocationInput">Start Location</label>
+            <input type="text" class="form-control" id="startLocationInput" />
+        </div>
+        <div class="form-group">
+            <label for="endLocationInput">End Location</label>
+            <input type="text" class="form-control" id="endLocationInput" />
+        </div>
+        <button class="btn btn-success form-control" id="getRouteButton">Go!</button>
+    </form>
+    <script src="jquery-3.1.0.js"></script>
+    <script src="bootstrap-3.3.7-dist\js\bootstrap.min.js"></script>
+    <script src="mapping.js" /></script>
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBijtQ6N5EHjeSfo4LTrACPhU793Yic13k&libraries=places&callback=initAutocomplete"
+    type="text/javascript"></script>
+</body>
+</html>
