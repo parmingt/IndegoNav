@@ -1,57 +1,79 @@
-$(document).ready(function(){
-    getPosition(function (position) {
-        $('#startLocationInput').val(formatPosition(position));
-        origin = new MapLocation({
-            coords: {
-                lat: position.coords.latitude,
-                lng: position.coords.longitude
-            }
-        });
-    });
+var originAutocomplete, destinationAutocomplete;
+var MAP_API_KEY = 'AIzaSyBijtQ6N5EHjeSfo4LTrACPhU793Yic13k';
+var userDestination;
+var userOrigin;
+var stationLocations = [];
+var startStation, endStation;
+var currentLocationInput = "Current Location";
 
-    $('#endLocationInput').focus(biasAutocomplete);
+$(document).ready(function(){
+    $('#startLocationInput').val(currentLocationInput);
+
+    $('#startLocationInput').focus(function () {
+        $(this).select();
+        biasAutocomplete(originAutocomplete);
+    });
+    $('#endLocationInput').focus(function () {
+        biasAutocomplete(destinationAutocomplete);
+    });
     $('#getRouteButton').click(function () {
-        getClosestStations();
-        window.open(buildMapUrl());
-        return false;
+        onGetRouteClick();
     });
 });
 
-var autocomplete;
-var MAP_API_KEY = 'AIzaSyBijtQ6N5EHjeSfo4LTrACPhU793Yic13k';
-var destination;
-var origin;
-var stationLocations = [];
-var startStation, endStation;
-
-function getPosition(callback) {
-    if (navigator.geolocation && callback) {
+function getOriginFromDevice(callback) {
+    if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(function (position) {
-            var location = formatPosition(position);
-            callback(position);
+            userOrigin = new MapLocation({
+                coords: {
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude
+                }
+            });
+            if (callback) {
+                callback();
+            }
         });
+    }
+    else {
+        alert('Cannot get device location');
     }
 }
 
 function formatPosition(position) {
-    return 'Lat: ' + position.coords.latitude + ', Lon: ' + position.coords.longitude; 
+    return position.coords.latitude + ', ' + position.coords.longitude;
 }
 
 function initAutocomplete() {
     // Create the autocomplete object, restricting the search to geographical
     // location types.
-    autocomplete = new google.maps.places.Autocomplete(
+    originAutocomplete = new google.maps.places.Autocomplete(
+        document.getElementById('startLocationInput'),
+        {types: ['geocode']});
+    destinationAutocomplete = new google.maps.places.Autocomplete(
         document.getElementById('endLocationInput'),
         {types: ['geocode']});
 
     // When the user selects an address from the dropdown, populate the address
     // fields in the form.
-    autocomplete.addListener('place_changed', setDestination);
+    originAutocomplete.addListener('place_changed', setOrigin);
+    destinationAutocomplete.addListener('place_changed', setDestination);
+}
+
+function setOrigin() {
+    var place = originAutocomplete.getPlace();
+    userOrigin = new MapLocation({
+        placeId: place.place_id,
+        coords: {
+            lat: place.geometry.location.lat(),
+            lng: place.geometry.location.lng()
+        }
+    });
 }
 
 function setDestination() {
-    var place = autocomplete.getPlace();
-    destination = new MapLocation({
+    var place = destinationAutocomplete.getPlace();
+    userDestination = new MapLocation({
         placeId: place.place_id,
         coords: {
             lat: place.geometry.location.lat(),
@@ -62,7 +84,7 @@ function setDestination() {
 
 // Bias the autocomplete object to the user's geographical location,
 // as supplied by the browser's 'navigator.geolocation' object.
-function biasAutocomplete() {
+function biasAutocomplete(inputAutocomplete) {
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(function(position) {
             var geolocation = {
@@ -73,7 +95,7 @@ function biasAutocomplete() {
                 center: geolocation,
                 radius: position.coords.accuracy
             });
-            autocomplete.setBounds(circle.getBounds());
+            inputAutocomplete.setBounds(circle.getBounds());
         });
     }
 }
@@ -99,6 +121,19 @@ $.ajax({
     stationLocations = response.features;
 });
 
+function onGetRouteClick() {
+    if ($('#startLocationInput').val() === currentLocationInput) {
+        getOriginFromDevice(function () {
+            getClosestStations();
+            window.open(buildMapUrl());
+        });
+    }
+    else {
+        getClosestStations();
+        window.open(buildMapUrl());
+    }
+}
+
 function getDistance(mapLocation, bikeStation) {
     return Math.abs(mapLocation.coords.lat - bikeStation.geometry.coordinates[1]) + Math.abs(mapLocation.coords.lng - bikeStation.geometry.coordinates[0]);
 }
@@ -106,16 +141,18 @@ function getDistance(mapLocation, bikeStation) {
 function getClosestStations() {
     var startWalkDistance, endWalkDistance;
     stationLocations.forEach(function (station) {
-        if (!startWalkDistance || getDistance(origin, station) < startWalkDistance) {
-            startWalkDistance = getDistance(origin, station);
+        if (station.properties.bikesAvailable === 0) {
+            return;
+        }
+        if (!startWalkDistance || getDistance(userOrigin, station) < startWalkDistance) {
+            startWalkDistance = getDistance(userOrigin, station);
             startStation = station;
         }
-        if (!endWalkDistance || getDistance(destination, station) < endWalkDistance) {
-            endWalkDistance = getDistance(destination, station);
+        if (!endWalkDistance || getDistance(userDestination, station) < endWalkDistance) {
+            endWalkDistance = getDistance(userDestination, station);
             endStation = station;
         }
     });
-    console.log(startStation, endStation);
 }
 
 function buildMapUrl() {

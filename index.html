@@ -8,17 +8,20 @@
     <link rel="stylesheet" href="bootstrap-3.3.7-dist\css\bootstrap.css">
 </head>
 <body>
-    <form>
+    <div>
         <div class="form-group">
             <label for="startLocationInput">Start Location</label>
-            <input type="text" class="form-control" id="startLocationInput" />
+            <input type="text" class="form-control" id="startLocationInput" list="currentLocationList"/>
+            <datalist id="currentLocationList" style="display: inherit">
+                <option value="Current Location" selected></option>
+            </datalist>
         </div>
         <div class="form-group">
             <label for="endLocationInput">End Location</label>
             <input type="text" class="form-control" id="endLocationInput" />
         </div>
         <button class="btn btn-success form-control" id="getRouteButton">Go!</button>
-    </form>
+    </div>
     <script src="jquery-3.1.0.js"></script>
     <script src="bootstrap-3.3.7-dist\js\bootstrap.min.js"></script>
     <script src="mapping.js" /></script>
