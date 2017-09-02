@@ -1,20 +1,32 @@
 var userOrigin, startStation, endStation, userDestination;
+var MAP_API_KEY = 'AIzaSyBijtQ6N5EHjeSfo4LTrACPhU793Yic13k';
+var directionsService;
+var startWalkRoute, bikeRoute, endWalkRoute;
 
 getLocationsFromUrl();
-var myMap = L.map('mapid').setView([userOrigin.coords.lat, userOrigin.coords.lng], 13);
-var apiToken = 'pk.eyJ1IjoicGFybXl0YW5rIiwiYSI6ImNqNzJrY2l6cDAxbnQzM3RlMnd2cjRpd28ifQ.pWTPYPqvCSTDkPSTBMhXEg';
 
-L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=' + apiToken, {
-    attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
-    maxZoom: 18,
-    id: 'mapbox.streets',
-    accessToken: 'your.mapbox.access.token'
-}).addTo(myMap);
+function initMap() {
+    directionsService = new google.maps.DirectionsService;
+    startWalkRoute = new google.maps.DirectionsRenderer;
+    bikeRoute = new google.maps.DirectionsRenderer;
+    endWalkRoute = new google.maps.DirectionsRenderer;
+    var map = new google.maps.Map(document.getElementById('map'), {
+      zoom: 7,
+      center: {lat: 41.85, lng: -87.65}
+    });
+    startWalkRoute.setMap(map);
+    bikeRoute.setMap(map);
+    endWalkRoute.setMap(map);
 
-var originMarker = markLocation(userOrigin);
-var startStationMarker = markLocation(startStation);
-var endStationMarker = markLocation(endStation);
-var destinationMarker = markLocation(userDestination);
+    calculateAndDisplayRoute(userOrigin, startStation, "WALKING", startWalkRoute);
+    calculateAndDisplayRoute(startStation, endStation, "BICYCLING", bikeRoute);
+    calculateAndDisplayRoute(endStation, userDestination, "WALKING", endWalkRoute);
+}
+
+// var originMarker = markLocation(userOrigin);
+// var startStationMarker = markLocation(startStation);
+// var endStationMarker = markLocation(endStation);
+// var destinationMarker = markLocation(userDestination);
 
 function getLocationsFromUrl() {
     var search = window.location.search.replace('?', '');
@@ -25,6 +37,22 @@ function getLocationsFromUrl() {
     userDestination = new MapLocation(null, places[3]);
 }
 
-function markLocation(location) {
-    return L.marker([location.coords.lat, location.coords.lng]).addTo(myMap);
+// function markLocation(location) {
+//     return L.marker([location.coords.lat, location.coords.lng]).addTo(myMap);
+// }
+
+function calculateAndDisplayRoute(startLocation, endLocation, mode, renderer) {
+    var directionsService = new google.maps.DirectionsService;
+    directionsService.route({
+        origin: startLocation.coords.lat + ',' + startLocation.coords.lng,
+        destination: endLocation.coords.lat + ',' + endLocation.coords.lng,
+        travelMode: mode
+    }, function(response, status) {
+        if (status === 'OK') {
+            renderer.setDirections(response);
+        }
+        else {
+            window.alert(status);
+        }
+    });
 }

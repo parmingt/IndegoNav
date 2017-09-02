@@ -1,5 +1,4 @@
 var originAutocomplete, destinationAutocomplete;
-var MAP_API_KEY = 'AIzaSyBijtQ6N5EHjeSfo4LTrACPhU793Yic13k';
 var userDestination;
 var userOrigin;
 var stationLocations = [];
@@ -43,7 +42,6 @@ function getOriginFromDevice(callback) {
 function formatPosition(position) {
     return position.coords.latitude + ', ' + position.coords.longitude;
 }
-
 function initAutocomplete() {
     // Create the autocomplete object, restricting the search to geographical
     // location types.
@@ -113,13 +111,11 @@ function onGetRouteClick() {
         getOriginFromDevice(function () {
             getClosestStations();
             goToMapPage();
-            //window.open(buildMapUrl());
         });
     }
     else {
         getClosestStations();
         goToMapPage();
-        //window.open(buildMapUrl());
     }
 }
 
