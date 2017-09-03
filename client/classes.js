@@ -5,8 +5,8 @@ var MapLocation = class{
             this.coords = {};
             if (startValues.coords) {
                 this.coords = {
-                    lat: startValues.coords ? startValues.coords.lat : null,
-                    lng: startValues.coords ? startValues.coords.lng : null
+                    lat: startValues.coords ? parseFloat(startValues.coords.lat) : null,
+                    lng: startValues.coords ? parseFloat(startValues.coords.lng) : null
                 }
             }
         }
@@ -14,8 +14,8 @@ var MapLocation = class{
             this.placeId = queryString.split('=')[0];
             var coordinateString = queryString.split('=')[1];
             this.coords = {
-                lat: coordinateString.split(',')[0],
-                lng: coordinateString.split(',')[1]
+                lat: parseFloat(coordinateString.split(',')[0]),
+                lng: parseFloat(coordinateString.split(',')[1])
             }
         }
     }
